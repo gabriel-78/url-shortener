@@ -6,6 +6,10 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod';
+import fastifyMultipart from '@fastify/multipart';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
+import { transformSwaggerSchema } from './routes/transform-swagger-schema';
 
 const server = fastify();
 
@@ -25,8 +29,19 @@ server.setErrorHandler((error, request, reply) => {
 
 server.register(fastifyCors, { origin: '*' });
 
-console.log(env);
+server.register(fastifyMultipart);
 
-server.listen({ port: 3333, host: '0.0.0.0' }).then(() => {
+server.register(fastifySwagger, {
+  openapi: {
+    info: { title: 'URL Shortener', version: '1.0.0' },
+  },
+  transform: transformSwaggerSchema,
+});
+
+server.register(fastifySwaggerUi, {
+  routePrefix: '/docs',
+});
+
+server.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
   console.log('HTTP server runing');
 });
