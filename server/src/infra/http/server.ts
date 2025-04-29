@@ -9,7 +9,8 @@ import {
 import fastifyMultipart from '@fastify/multipart';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import { transformSwaggerSchema } from './routes/transform-swagger-schema';
+import { transformSwaggerSchema } from '@/routes/transform-swagger-schema';
+import { linkRoutes } from '@/routes/links';
 
 const server = fastify();
 
@@ -35,12 +36,15 @@ server.register(fastifySwagger, {
   openapi: {
     info: { title: 'URL Shortener', version: '1.0.0' },
   },
-  transform: transformSwaggerSchema,
+  // TODO: descomentar quando for ajeitar mais na frente
+  // transform: transformSwaggerSchema,
 });
 
 server.register(fastifySwaggerUi, {
   routePrefix: '/docs',
 });
+
+server.register(linkRoutes);
 
 server.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
   console.log('HTTP server runing');
