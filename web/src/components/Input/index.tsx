@@ -23,8 +23,6 @@ function extractWidthClasses(className: string = ''): ExtractedClasses {
     widthClasses = [widthClasses, x].join(' ');
   }
 
-  console.log(widthClasses);
-
   const rest = className
     .split(' ')
     .filter((cls) => !widthMatches.includes(cls))
