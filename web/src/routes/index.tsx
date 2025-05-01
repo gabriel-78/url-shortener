@@ -9,7 +9,7 @@ function RoutesComponent() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-        <Route path="/:linkId" element={<Redirect />} />
+        <Route path="/links/:linkId" element={<Redirect />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
