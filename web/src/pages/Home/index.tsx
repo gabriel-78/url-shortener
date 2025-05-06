@@ -1,6 +1,6 @@
 import CreateLinkForm from './components/CreateLinkForm';
 import LinkList from './components/LinkList';
-import Logo from '../../assets/Logo.svg';
+import Logo from '../../shared/assets/Logo.svg';
 
 function Home() {
   return (

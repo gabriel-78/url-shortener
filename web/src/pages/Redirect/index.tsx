@@ -1,4 +1,4 @@
-import LogoIcon from '../../assets/Logo_Icon.svg';
+import LogoIcon from '../../shared/assets/Logo_Icon.svg';
 
 function Redirect() {
   return (

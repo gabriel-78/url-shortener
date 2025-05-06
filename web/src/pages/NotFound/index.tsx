@@ -1,4 +1,4 @@
-import Error404 from '../../assets/Error404.svg';
+import Error404 from '../../shared/assets/Error404.svg';
 
 function NotFound() {
   return (
