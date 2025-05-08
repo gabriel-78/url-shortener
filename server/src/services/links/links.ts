@@ -2,7 +2,7 @@ import { db } from '@/db';
 import { linksTable } from '@/db/schemas/links';
 import { AppError } from '@/functions/errors/appError';
 import { Either, makeLeft, makeRight } from '@/infra/shared/either';
-import { InferSelectModel } from 'drizzle-orm';
+import { eq, InferSelectModel } from 'drizzle-orm';
 
 type Link = InferSelectModel<typeof linksTable>;
 
@@ -17,4 +17,19 @@ export async function getAllLinks(): Promise<Either<AppError, Link[]>> {
     );
 
   return makeRight(links);
+}
+
+export async function deleteLink(id: string): Promise<Either<AppError, void>> {
+  console.log('oi');
+
+  const links = await db.delete(linksTable).where(eq(linksTable.id, id));
+
+  console.log(links);
+
+  if (!links) return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database'));
+
+  if (links instanceof Error)
+    return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database', links.message));
+
+  return makeRight(undefined);
 }

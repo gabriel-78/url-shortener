@@ -4,12 +4,12 @@ import fastify from 'fastify';
 import {
   hasZodFastifySchemaValidationErrors,
   serializerCompiler,
+  jsonSchemaTransform,
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 import fastifyMultipart from '@fastify/multipart';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import { transformSwaggerSchema } from '@/routes/transform-swagger-schema';
 import { linkRoutes } from '@/routes/links';
 
 const server = fastify();
@@ -28,7 +28,7 @@ server.setErrorHandler((error, request, reply) => {
   return reply.status(500).send({ message: 'Internal server error.' });
 });
 
-server.register(fastifyCors, { origin: '*' });
+server.register(fastifyCors, { origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] });
 
 server.register(fastifyMultipart);
 
@@ -36,6 +36,7 @@ server.register(fastifySwagger, {
   openapi: {
     info: { title: 'URL Shortener', version: '1.0.0' },
   },
+  transform: jsonSchemaTransform,
   // TODO: descomentar quando for ajeitar mais na frente
   // transform: transformSwaggerSchema,
 });
