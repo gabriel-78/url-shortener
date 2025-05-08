@@ -1,8 +1,8 @@
 import { Copy, DownloadSimple, Link as LinkIcon, Trash } from '@phosphor-icons/react';
 import Button from '../../../../components/Button';
-import { useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import IconButton from '../../../../components/IconButton';
-import { getAllLinks } from '../../../../services/links/linkService';
+import { deleteLink, getAllLinks } from '../../../../services/links/linkService';
 import { Link } from '../../../../services/links/link';
 
 type Props = {};
@@ -15,13 +15,20 @@ export type ShortenerLink = {
 };
 
 function LinkList({}: Props) {
-  const [isVisibleLinks, setIsVisibleLinks] = useState<boolean>(false);
   const [shortenerLinks, setShortenerLinks] = useState<Link[]>([]);
 
   async function fetchData() {
     const response = await getAllLinks();
 
-    setShortenerLinks(response);
+    setShortenerLinks(Array.isArray(response) ? response : []);
+  }
+
+  async function onDeleteLink(event: MouseEvent<HTMLButtonElement>) {
+    const { value } = event.currentTarget;
+
+    const result = await deleteLink(value);
+
+    setShortenerLinks((prev) => prev.filter(({ id }) => id !== value));
   }
 
   useEffect(() => {
@@ -33,7 +40,12 @@ function LinkList({}: Props) {
       <header className="flex gap-3 justify-between items-center w-full">
         <h1 className="text-lg text-gray-600">Meus links</h1>
 
-        <Button onClick={() => setIsVisibleLinks((prev) => !prev)} variant="secondary">
+        <Button
+          onClick={() => {
+            console.log('baixou o csv');
+          }}
+          variant="secondary"
+        >
           <DownloadSimple />
 
           <span>Baixar CSV</span>
@@ -69,7 +81,7 @@ function LinkList({}: Props) {
                     <Copy />
                   </IconButton>
 
-                  <IconButton>
+                  <IconButton value={link.id} onClick={onDeleteLink}>
                     <Trash />
                   </IconButton>
                 </div>

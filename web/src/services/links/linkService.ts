@@ -14,3 +14,15 @@ export async function getAllLinks(): Promise<Link[]> {
     return error.message;
   }
 }
+
+export async function deleteLink(id: string): Promise<undefined> {
+  try {
+    const response = await apiClient.delete<undefined>(`/links/${id}`);
+
+    return response.data;
+  } catch (err) {
+    const error = err as AxiosError<string>;
+
+    return error.message;
+  }
+}
