@@ -1,5 +1,6 @@
 import { isRight, unwrapEither } from '@/infra/shared/either';
-import { deleteLink, getAllLinks } from '@/services/links/links';
+import { createLink, deleteLink, getAllLinks } from '@/services/links/links';
+import { CreateLinkBody } from '@/services/links/schemas/createLink';
 import { DeleteLinkParams } from '@/services/links/schemas/deleteLink';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
@@ -30,7 +31,31 @@ export async function deleteLinkHandler(
 
   const result = await deleteLink(id);
 
-  console.log('result', result);
+  if (isRight(result)) {
+    const links = unwrapEither(result);
+
+    return reply.status(200).send(links);
+  }
+
+  const error = unwrapEither(result);
+
+  const statusCode = error.getStatusCode();
+
+  if (statusCode === 500) return reply.status(500).send();
+
+  return reply.status(statusCode).send({ message: error.message });
+}
+
+export async function createLinkHandler(
+  request: FastifyRequest<{ Body: CreateLinkBody }>,
+  reply: FastifyReply,
+) {
+  const value = request.body;
+
+  const result = await createLink({
+    originalUrl: value.originalUrl,
+    shortenerUrl: value.shortenerUrl,
+  });
 
   if (isRight(result)) {
     const links = unwrapEither(result);

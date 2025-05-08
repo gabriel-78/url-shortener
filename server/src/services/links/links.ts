@@ -20,11 +20,7 @@ export async function getAllLinks(): Promise<Either<AppError, Link[]>> {
 }
 
 export async function deleteLink(id: string): Promise<Either<AppError, void>> {
-  console.log('oi');
-
   const links = await db.delete(linksTable).where(eq(linksTable.id, id));
-
-  console.log(links);
 
   if (!links) return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database'));
 
@@ -32,4 +28,26 @@ export async function deleteLink(id: string): Promise<Either<AppError, void>> {
     return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database', links.message));
 
   return makeRight(undefined);
+}
+
+export async function createLink(value: {
+  originalUrl: string;
+  shortenerUrl: string;
+}): Promise<Either<AppError, Link>> {
+  const newLink: Omit<Link, 'id'> = {
+    accessQuantity: 0,
+    createdAt: new Date(),
+    originalUrl: value.originalUrl,
+    shortenerlUrl: value.shortenerUrl,
+    updatedAt: null,
+  };
+
+  const [link] = await db.insert(linksTable).values(newLink).returning();
+
+  if (!link) return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database'));
+
+  if (link instanceof Error)
+    return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database', link.message));
+
+  return makeRight(link);
 }
