@@ -1,6 +1,7 @@
 import CreateLinkForm from './components/CreateLinkForm';
 import LinkList from './components/LinkList';
 import Logo from '../../shared/assets/Logo.svg';
+import { ManageLinksProvider } from './context/ManageLinksContext/ManageLinksProvider';
 
 function Home() {
   return (
@@ -10,11 +11,13 @@ function Home() {
           <img src={Logo} alt="Ícone do brev.ly" />
         </figure>
 
-        <div className="flex gap-[1.75rem] max-sm:flex-col w-full overflow-hidden max-h-full">
-          <CreateLinkForm />
+        <ManageLinksProvider>
+          <div className="flex gap-[1.75rem] max-sm:flex-col w-full overflow-hidden max-h-full">
+            <CreateLinkForm />
 
-          <LinkList />
-        </div>
+            <LinkList />
+          </div>
+        </ManageLinksProvider>
       </section>
     </div>
   );

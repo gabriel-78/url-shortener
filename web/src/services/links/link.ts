@@ -4,3 +4,8 @@ export type Link = {
   shortenerlUrl: string;
   accessQuantity: number;
 };
+
+export type CreateLink = {
+  originalUrl: string;
+  shortenerUrl: string;
+};

@@ -4,13 +4,19 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback } from 'react';
-import Logo from '../../../../assets/Logo.svg';
+import { createLink } from '../../../../services/links/linkService';
+import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
 
 type Props = {};
 
 const CreateLinkSchema = z.object({
-  link: z.string().min(1, 'Campo obrigatório.'),
-  shortenerLink: z.string().min(1, 'Campo obrigatório.'),
+  link: z.string().min(1, 'Campo obrigatório.').url('Informe uma url válida'),
+  shortenerLink: z
+    .string()
+    .min(1, 'Campo obrigatório.')
+    .regex(/^[a-zA-Z0-9_-]+$/, {
+      message: 'O link encurtado deve conter apenas letras, números, hífen ou underscore',
+    }),
 });
 
 type CreateLinkFormSchema = z.infer<typeof CreateLinkSchema>;
@@ -21,14 +27,26 @@ const DEFAULT_VALUE_FORM: CreateLinkFormSchema = {
 };
 
 function CreateLinkForm({ ...props }: Props) {
-  const { register, handleSubmit, formState } = useForm<CreateLinkFormSchema>({
+  const { register, handleSubmit, formState, reset } = useForm<CreateLinkFormSchema>({
     defaultValues: DEFAULT_VALUE_FORM,
     resolver: zodResolver(CreateLinkSchema),
   });
 
-  const onSubmit = useCallback((formData: CreateLinkFormSchema) => {
-    console.log('enviou:', formData);
-  }, []);
+  const { addLink } = useManageLinksContext();
+
+  const onSubmit = useCallback(
+    async (formData: CreateLinkFormSchema) => {
+      const result = await createLink({
+        originalUrl: formData.link,
+        shortenerUrl: formData.shortenerLink,
+      });
+
+      addLink(result);
+
+      reset();
+    },
+    [addLink],
+  );
 
   return (
     <form
@@ -43,6 +61,7 @@ function CreateLinkForm({ ...props }: Props) {
         placeholder="www.exemplo.com.br"
         {...register('link')}
         error={formState.errors.link?.message}
+        disabled={formState.isSubmitting}
       />
 
       <Input
@@ -51,12 +70,13 @@ function CreateLinkForm({ ...props }: Props) {
         placeholder="brev.ly/"
         {...register('shortenerLink')}
         error={formState.errors.shortenerLink?.message}
+        disabled={formState.isSubmitting}
       />
 
       <Button
         variant="primary"
         type="submit"
-        disabled={!formState.isDirty}
+        disabled={!formState.isDirty || formState.isSubmitting}
         className="w-full justify-center"
       >
         <span>Salvar link</span>

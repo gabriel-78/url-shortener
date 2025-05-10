@@ -1,9 +1,9 @@
-import { Copy, DownloadSimple, Link as LinkIcon, Trash } from '@phosphor-icons/react';
+import { Copy, DownloadSimple, Link as LinkIcon, Spinner, Trash } from '@phosphor-icons/react';
 import Button from '../../../../components/Button';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent } from 'react';
 import IconButton from '../../../../components/IconButton';
-import { deleteLink, getAllLinks } from '../../../../services/links/linkService';
-import { Link } from '../../../../services/links/link';
+import { deleteLink } from '../../../../services/links/linkService';
+import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
 
 type Props = {};
 
@@ -15,25 +15,21 @@ export type ShortenerLink = {
 };
 
 function LinkList({}: Props) {
-  const [shortenerLinks, setShortenerLinks] = useState<Link[]>([]);
-
-  async function fetchData() {
-    const response = await getAllLinks();
-
-    setShortenerLinks(Array.isArray(response) ? response : []);
-  }
+  const { links, isLoading, removeLink } = useManageLinksContext();
 
   async function onDeleteLink(event: MouseEvent<HTMLButtonElement>) {
-    const { value } = event.currentTarget;
+    const { value, name } = event.currentTarget;
 
-    const result = await deleteLink(value);
+    const deleteConfirmed = window.confirm(`Tem certeza que deseja excluir: ${name}?`);
 
-    setShortenerLinks((prev) => prev.filter(({ id }) => id !== value));
+    if (deleteConfirmed) {
+      const result = await deleteLink(value);
+
+      removeLink(value);
+
+      alert(`${name} foi excluído com sucesso.`);
+    }
   }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   return (
     <section className="flex p-8 rounded-lg flex-col bg-gray-100 h-fit max-w-[36.25rem] w-full items-start gap-5 overflow-hidden sm:max-h-[24.75rem]">
@@ -52,18 +48,30 @@ function LinkList({}: Props) {
         </Button>
       </header>
 
-      {shortenerLinks.length === 0 ? (
+      {links.length === 0 || isLoading ? (
         <main className="flex [&>svg]:size-8 [&>svg]:text-gray-400 w-full border-y border-solid border-t-gray-200 border-b-transparent gap-4 p-4 pt-9 flex-col items-center justify-center">
-          <LinkIcon />
+          {isLoading ? (
+            <>
+              <Spinner className="animate-spin" />
 
-          <span className="text-xs text-gray-500 whitespace-nowrap w-full text-center">
-            ainda não existem links cadastrados
-          </span>
+              <span className="text-xs text-gray-500 whitespace-nowrap w-full text-center">
+                Carregando links ...
+              </span>
+            </>
+          ) : (
+            <>
+              <LinkIcon />
+
+              <span className="text-xs text-gray-500 whitespace-nowrap w-full text-center">
+                ainda não existem links cadastrados
+              </span>
+            </>
+          )}
         </main>
       ) : (
         <main className="flex [&>svg]:size-8 overflow-hidden [&>svg]:text-gray-400 w-full border-y border-solid border-t-gray-200 border-b-transparent gap-4 flex-col items-center justify-center">
           <ul className="flex flex-col w-full overflow-auto">
-            {shortenerLinks.map((link) => (
+            {links.map((link) => (
               <li
                 key={link.id}
                 className="grid w-full grid-cols-[1fr_5.5rem_auto] gap-5 py-4 border-y border-solid border-b-gray-200 last-of-type:border-b-transparent border-t-transparent"
@@ -81,7 +89,7 @@ function LinkList({}: Props) {
                     <Copy />
                   </IconButton>
 
-                  <IconButton value={link.id} onClick={onDeleteLink}>
+                  <IconButton value={link.id} name={link.shortenerlUrl} onClick={onDeleteLink}>
                     <Trash />
                   </IconButton>
                 </div>
