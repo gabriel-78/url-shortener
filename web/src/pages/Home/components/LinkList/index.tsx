@@ -4,6 +4,7 @@ import { MouseEvent } from 'react';
 import IconButton from '../../../../components/IconButton';
 import { deleteLink } from '../../../../services/links/linkService';
 import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
+import { toast } from 'sonner';
 
 type Props = {};
 
@@ -28,13 +29,27 @@ function LinkList({}: Props) {
       removeLink(value);
 
       alert(`${name} foi excluído com sucesso.`);
+      toast.success('Link apagado com sucesso', {
+        description: `O link ${name} foi apagado.`,
+      });
+    }
+  }
+
+  async function copyToClipboard(name: string, url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.info('Link copiado com sucesso', {
+        description: `O link ${name} foi copiado para a área de transferência`,
+      });
+    } catch (error) {
+      console.error(error.message);
     }
   }
 
   return (
     <section className="flex p-8 rounded-lg flex-col bg-gray-100 h-fit max-w-[36.25rem] w-full items-start gap-5 overflow-hidden sm:max-h-[24.75rem]">
       <header className="flex gap-3 justify-between items-center w-full">
-        <h1 className="text-lg text-gray-600">Meus links</h1>
+        <h1 className="text-lg text-gray-600 ">Meus links</h1>
 
         <Button
           onClick={() => {
@@ -85,7 +100,11 @@ function LinkList({}: Props) {
                 <span className="whitespace-nowrap text-end self-center text-sm text-gray-500 truncate">{`${link.accessQuantity.toLocaleString(navigator.language, { style: 'decimal' })} acessos`}</span>
 
                 <div className="flex items-center gap-1">
-                  <IconButton>
+                  <IconButton
+                    onClick={() =>
+                      copyToClipboard(link.shortenerlUrl, `${window.location.href}links/${link.id}`)
+                    }
+                  >
                     <Copy />
                   </IconButton>
 
