@@ -1,4 +1,10 @@
-import { createLinkHandler, deleteLinkHandler, getLinksHandler } from '@/controllers/links';
+import {
+  accessLinkHandler,
+  createLinkHandler,
+  deleteLinkHandler,
+  getLinksHandler,
+} from '@/controllers/links';
+import { accessLinkParamsSchema } from '@/services/links/schemas/accessLink';
 import { createLinkBodySchema } from '@/services/links/schemas/createLink';
 import { deleteLinkParamsSchema } from '@/services/links/schemas/deleteLink';
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -14,5 +20,13 @@ export const linkRoutes: FastifyPluginAsyncZod = async (server) => {
       schema: { params: deleteLinkParamsSchema },
     },
     deleteLinkHandler,
+  );
+
+  server.post(
+    '/links/:id/access',
+    {
+      schema: { params: accessLinkParamsSchema },
+    },
+    accessLinkHandler,
   );
 };
