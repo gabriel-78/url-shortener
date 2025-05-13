@@ -38,3 +38,15 @@ export async function deleteLink(id: string): Promise<undefined> {
     return error.message;
   }
 }
+
+export async function accessLink(id: string): Promise<Link> {
+  try {
+    const response = await apiClient.post<Link>(`/links/${id}/access`);
+
+    return response.data;
+  } catch (err) {
+    const error = err as AxiosError<string>;
+
+    return error.message;
+  }
+}
