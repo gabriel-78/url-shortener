@@ -5,6 +5,7 @@ import IconButton from '../../../../components/IconButton';
 import { deleteLink } from '../../../../services/links/linkService';
 import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {};
 
@@ -17,6 +18,7 @@ export type ShortenerLink = {
 
 function LinkList({}: Props) {
   const { links, isLoading, removeLink } = useManageLinksContext();
+  const navigate = useNavigate();
 
   async function onDeleteLink(event: MouseEvent<HTMLButtonElement>) {
     const { value, name } = event.currentTarget;
@@ -92,7 +94,12 @@ function LinkList({}: Props) {
                 className="grid w-full grid-cols-[1fr_5.5rem_auto] gap-5 py-4 border-y border-solid border-b-gray-200 last-of-type:border-b-transparent border-t-transparent"
               >
                 <div className="flex flex-col w-full overflow-hidden gap-1">
-                  <strong className="text-md truncate text-blue-base">{link.shortenerlUrl}</strong>
+                  <strong
+                    className="text-md truncate text-blue-base cursor-pointer"
+                    onClick={() => navigate(`/links/${link.id}`)}
+                  >
+                    {link.shortenerlUrl}
+                  </strong>
 
                   <small className="text-sm text-gray-500 truncate">{link.originalUrl}</small>
                 </div>
