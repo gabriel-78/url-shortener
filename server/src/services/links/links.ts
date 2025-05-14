@@ -1,22 +1,24 @@
 import { db } from '@/db';
 import { linksTable } from '@/db/schemas/links';
+import { LinkEntity } from '@/domain/link/entity';
 import { AppError } from '@/functions/errors/appError';
 import { Either, makeLeft, makeRight } from '@/infra/shared/either';
 import { eq, InferSelectModel, sql } from 'drizzle-orm';
 
 type Link = InferSelectModel<typeof linksTable>;
 
-export async function getAllLinks(): Promise<Either<AppError, Link[]>> {
-  const links = await db.select().from(linksTable);
+export async function getAllLinks(): Promise<Either<AppError, LinkEntity[]>> {
+  try {
+    const links = await db.select().from(linksTable);
 
-  if (!links) return makeLeft(new AppError('DB_ERROR', 'Error fetching links from the database'));
+    const entities = links.map<LinkEntity>((link) => new LinkEntity(link));
 
-  if (links instanceof Error)
-    return makeLeft(
-      new AppError('DB_ERROR', 'Error fetching links from the database', links.message),
-    );
+    return makeRight(entities);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
 
-  return makeRight(links);
+    return makeLeft(new AppError('DB_ERROR', 'Erro ao buscar links no banco de dados', message));
+  }
 }
 
 export async function accessLink(id: string): Promise<Either<AppError, Link>> {
@@ -37,7 +39,7 @@ export async function accessLink(id: string): Promise<Either<AppError, Link>> {
   return makeRight(link);
 }
 
-export async function deleteLink(id: string): Promise<Either<AppError, void>> {
+export async function deleteLink(id: string): Promise<Either<AppError, null>> {
   const links = await db.delete(linksTable).where(eq(linksTable.id, id));
 
   if (!links) return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database'));
@@ -45,7 +47,7 @@ export async function deleteLink(id: string): Promise<Either<AppError, void>> {
   if (links instanceof Error)
     return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database', links.message));
 
-  return makeRight(undefined);
+  return makeRight(null);
 }
 
 export async function createLink(value: {

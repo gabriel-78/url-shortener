@@ -1,3 +1,4 @@
+import { InferSelectModel } from 'drizzle-orm';
 import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 import { uuidv7 } from 'uuidv7';
@@ -12,3 +13,5 @@ export const linksTable = pgTable('links', {
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at'),
 });
+
+export type Link = InferSelectModel<typeof linksTable>;
