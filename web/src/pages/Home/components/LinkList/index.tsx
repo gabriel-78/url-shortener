@@ -6,6 +6,8 @@ import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLi
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { deleteLink } from '../../../../services/links/deleteLink';
+import { getCSVLinks } from '../../../../services/links/getCSVLinks';
+import downloadFiles from '../../../../shared/utils/downloadFiles';
 
 type Props = {};
 
@@ -40,6 +42,18 @@ function LinkList({}: Props) {
     }
   }
 
+  async function onDownloadCSV() {
+    const result = await getCSVLinks();
+
+    if (result.isSuccess) {
+      const value = result.getValue();
+
+      downloadFiles([{ name: 'Lista_de_links', url: value.fileUrl }]);
+    } else {
+      toast.error(result.error);
+    }
+  }
+
   async function copyToClipboard(name: string, url: string) {
     try {
       await navigator.clipboard.writeText(url);
@@ -56,12 +70,7 @@ function LinkList({}: Props) {
       <header className="flex gap-3 justify-between items-center w-full">
         <h1 className="text-lg text-gray-600 ">Meus links</h1>
 
-        <Button
-          onClick={() => {
-            console.log('baixou o csv');
-          }}
-          variant="secondary"
-        >
+        <Button onClick={onDownloadCSV} type="button" variant="secondary">
           <DownloadSimple />
 
           <span>Baixar CSV</span>

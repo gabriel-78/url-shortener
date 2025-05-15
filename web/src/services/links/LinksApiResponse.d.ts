@@ -4,3 +4,7 @@ export type GetLinkResponse = {
   abreviatedUrl: string;
   accessQuantity: number;
 };
+
+export type GetCSVLinksResponse = {
+  fileUrl: string;
+};
