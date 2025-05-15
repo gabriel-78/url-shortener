@@ -1,16 +1,22 @@
 import { isRight, unwrapEither } from '@/infra/shared/either';
 import { failure, success } from '@/infra/shared/result';
-import { getAllLinks } from '@/services/links/links';
+import { accessLink } from '@/services/links/links';
+import { AccessLinkParams } from '@/services/links/schemas/accessLink';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { toGetLinkResponse } from './utils/toGetLinkResponse';
 
-export async function getLinksHandler(request: FastifyRequest, reply: FastifyReply) {
-  const result = await getAllLinks();
+export async function accessLinkHandler(
+  request: FastifyRequest<{ Params: AccessLinkParams }>,
+  reply: FastifyReply,
+) {
+  const { id } = request.params;
+
+  const result = await accessLink(id);
 
   if (isRight(result)) {
-    const links = unwrapEither(result);
+    const link = unwrapEither(result);
 
-    const response = links.map((link) => toGetLinkResponse(link));
+    const response = toGetLinkResponse(link);
 
     return reply.status(200).send(success(response));
   }

@@ -1,17 +1,25 @@
 import { isRight, unwrapEither } from '@/infra/shared/either';
 import { failure, success } from '@/infra/shared/result';
-import { getAllLinks } from '@/services/links/links';
+import { createLink } from '@/services/links/links';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { CreateLinkBody } from '@/services/links/schemas/createLink';
 import { toGetLinkResponse } from './utils/toGetLinkResponse';
 
-export async function getLinksHandler(request: FastifyRequest, reply: FastifyReply) {
-  const result = await getAllLinks();
+export async function createLinkHandler(
+  request: FastifyRequest<{ Body: CreateLinkBody }>,
+  reply: FastifyReply,
+) {
+  const value = request.body;
+
+  const result = await createLink({
+    originalUrl: value.originalUrl,
+    shortenerUrl: value.shortenerUrl,
+  });
 
   if (isRight(result)) {
-    const links = unwrapEither(result);
+    const link = unwrapEither(result);
 
-    const response = links.map((link) => toGetLinkResponse(link));
-
+    const response = toGetLinkResponse(link);
     return reply.status(200).send(success(response));
   }
 

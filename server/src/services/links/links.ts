@@ -21,7 +21,7 @@ export async function getAllLinks(): Promise<Either<AppError, LinkEntity[]>> {
   }
 }
 
-export async function accessLink(id: string): Promise<Either<AppError, Link>> {
+export async function accessLink(id: string): Promise<Either<AppError, LinkEntity>> {
   const [link] = await db
     .update(linksTable)
     .set({ accessQuantity: sql`${linksTable.accessQuantity} + 1`, updatedAt: new Date() })
@@ -36,7 +36,9 @@ export async function accessLink(id: string): Promise<Either<AppError, Link>> {
       new AppError('DB_ERROR', 'Error in update access link from the database', link.message),
     );
 
-  return makeRight(link);
+  const entity = new LinkEntity(link);
+
+  return makeRight(entity);
 }
 
 export async function deleteLink(id: string): Promise<Either<AppError, null>> {
@@ -53,7 +55,7 @@ export async function deleteLink(id: string): Promise<Either<AppError, null>> {
 export async function createLink(value: {
   originalUrl: string;
   shortenerUrl: string;
-}): Promise<Either<AppError, Link>> {
+}): Promise<Either<AppError, LinkEntity>> {
   const newLink: Omit<Link, 'id'> = {
     accessQuantity: 0,
     createdAt: new Date(),
@@ -69,5 +71,7 @@ export async function createLink(value: {
   if (link instanceof Error)
     return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database', link.message));
 
-  return makeRight(link);
+  const entity = new LinkEntity(link);
+
+  return makeRight(entity);
 }
