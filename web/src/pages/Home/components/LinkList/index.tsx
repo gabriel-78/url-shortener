@@ -2,10 +2,10 @@ import { Copy, DownloadSimple, Link as LinkIcon, Spinner, Trash } from '@phospho
 import Button from '../../../../components/Button';
 import { MouseEvent } from 'react';
 import IconButton from '../../../../components/IconButton';
-import { deleteLink } from '../../../../services/links/linkService';
 import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { deleteLink } from '../../../../services/links/deleteLink';
 
 type Props = {};
 
@@ -28,12 +28,15 @@ function LinkList({}: Props) {
     if (deleteConfirmed) {
       const result = await deleteLink(value);
 
-      removeLink(value);
+      if (result.isSuccess) {
+        removeLink(value);
 
-      alert(`${name} foi excluído com sucesso.`);
-      toast.success('Link apagado com sucesso', {
-        description: `O link ${name} foi apagado.`,
-      });
+        toast.success('Link apagado com sucesso', {
+          description: `O link ${name} foi apagado.`,
+        });
+      } else {
+        toast.error(result.error);
+      }
     }
   }
 

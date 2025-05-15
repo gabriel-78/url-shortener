@@ -1,7 +1,9 @@
 import { useState, ReactNode, useEffect, useCallback } from 'react';
 import { Link } from '../../../../services/links/link';
 import { ManageLinksContext } from './ManageLinksContext';
-import { getAllLinks } from '../../../../services/links/linkService';
+import { getAllLinks } from '../../../../services/links/getLinks';
+import { parseGetLinkResponseToLink } from '../../utils/parseGetLinkResponseToLink';
+import { toast } from 'sonner';
 
 export const ManageLinksProvider = ({ children }: { children: ReactNode }) => {
   const [links, setLinks] = useState<Link[]>([]);
@@ -24,9 +26,15 @@ export const ManageLinksProvider = ({ children }: { children: ReactNode }) => {
   const fetchLinks = useCallback(async () => {
     setIsFetchingLinks(true);
 
-    const response = await getAllLinks();
+    const result = await getAllLinks();
 
-    setLinks(Array.isArray(response) ? response : []);
+    if (result.isSuccess) {
+      const value = result.getValue().map((resultValue) => parseGetLinkResponseToLink(resultValue));
+
+      setLinks(value);
+    } else {
+      toast.error(result.error);
+    }
 
     setIsFetchingLinks(false);
   }, []);

@@ -4,8 +4,9 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback } from 'react';
-import { createLink } from '../../../../services/links/linkService';
 import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
+import { createLink } from '../../../../services/links/createLink';
+import { toast } from 'sonner';
 
 type Props = {};
 
@@ -41,9 +42,20 @@ function CreateLinkForm({ ...props }: Props) {
         shortenerUrl: formData.shortenerLink,
       });
 
-      addLink(result);
+      if (result.isSuccess) {
+        const value = result.getValue();
 
-      reset();
+        addLink({
+          accessQuantity: value.accessQuantity,
+          id: value.id,
+          originalUrl: value.url,
+          shortenerlUrl: value.abreviatedUrl,
+        });
+
+        reset();
+      } else {
+        toast.error(result.error);
+      }
     },
     [addLink],
   );

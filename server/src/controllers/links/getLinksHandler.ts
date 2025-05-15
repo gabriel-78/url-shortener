@@ -11,9 +11,9 @@ export async function getLinksHandler(request: FastifyRequest, reply: FastifyRep
   if (isRight(result)) {
     const links = unwrapEither(result);
 
-    const x = links.map((y) => getLinkResponseSchema.parse(y));
+    const response = links.map((y) => getLinkResponseSchema.parse(y));
 
-    return reply.status(200).send(success(x));
+    return reply.status(200).send(success(response));
   }
 
   const error = unwrapEither(result);
