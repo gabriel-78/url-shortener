@@ -2,15 +2,15 @@ import { useParams } from 'react-router-dom';
 import LogoIcon from '../../shared/assets/Logo_Icon.svg';
 import { useEffect, useState } from 'react';
 import { Link } from '../../services/links/link';
-import { getLink } from '../../services/links/getLink';
 import { parseGetLinkResponseToLink } from '../Home/utils/parseGetLinkResponseToLink';
+import { accessLink } from '../../services/links/accessLink';
 
 function Redirect() {
   const { linkId } = useParams<{ linkId: string }>();
   const [link, setLink] = useState<Link | null>(null);
 
   async function fetchAccessLink() {
-    const result = await getLink(linkId ?? '');
+    const result = await accessLink(linkId ?? '');
 
     if (result.isSuccess) {
       const value = parseGetLinkResponseToLink(result.getValue());
