@@ -1,6 +1,6 @@
-import { isRight, unwrapEither } from '@/infra/shared/either';
+import { isLeft, isRight, unwrapEither } from '@/infra/shared/either';
 import { failure, success } from '@/infra/shared/result';
-import { accessLink } from '@/services/links/links';
+import { getLink, updateLink } from '@/services/links/links';
 import { AccessLinkParams } from '@/services/links/schemas/accessLink';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { toGetLinkResponse } from './utils/toGetLinkResponse';
@@ -11,7 +11,15 @@ export async function accessLinkHandler(
 ) {
   const { id } = request.params;
 
-  const result = await accessLink(id);
+  const linkEither = await getLink(id);
+
+  if (isLeft(linkEither)) return linkEither;
+
+  let link = unwrapEither(linkEither);
+
+  link = link.incrementAccess();
+
+  const result = await updateLink(link);
 
   if (isRight(result)) {
     const link = unwrapEither(result);

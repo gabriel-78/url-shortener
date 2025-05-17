@@ -3,9 +3,9 @@ import { GetLinkResponse } from '@/services/links/schemas/responses/getLink';
 
 export function toGetLinkResponse(entity: LinkEntity): GetLinkResponse {
   return {
-    abreviatedUrl: entity.shortenerUrl,
+    abreviatedUrl: entity.shortenerUrl.getValue(),
     accessQuantity: entity.accessQuantity,
     id: entity.id,
-    url: entity.originalUrl,
+    url: entity.originalUrl.getValue(),
   } as GetLinkResponse;
 }

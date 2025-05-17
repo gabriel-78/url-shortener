@@ -1,9 +1,10 @@
-import { isRight, unwrapEither } from '@/infra/shared/either';
-import { failure, success } from '@/infra/shared/result';
+import { isLeft, unwrapEither } from '@/infra/shared/either';
+import { failureRequest, success } from '@/infra/shared/result';
 import { createLink } from '@/services/links/links';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateLinkBody } from '@/services/links/schemas/createLink';
 import { toGetLinkResponse } from './utils/toGetLinkResponse';
+import { LinkEntity } from '@/domain/link/entity';
 
 export async function createLinkHandler(
   request: FastifyRequest<{ Body: CreateLinkBody }>,
@@ -11,23 +12,24 @@ export async function createLinkHandler(
 ) {
   const value = request.body;
 
-  const result = await createLink({
+  const linkEither = LinkEntity.create({
     originalUrl: value.originalUrl,
     shortenerUrl: value.shortenerUrl,
   });
 
-  if (isRight(result)) {
-    const link = unwrapEither(result);
-
-    const response = toGetLinkResponse(link);
-    return reply.status(200).send(success(response));
+  if (isLeft(linkEither)) {
+    return failureRequest(reply, unwrapEither(linkEither));
   }
 
-  const error = unwrapEither(result);
+  const createdLinkEither = await createLink(unwrapEither(linkEither));
 
-  const statusCode = error.getStatusCode();
+  if (isLeft(createdLinkEither)) {
+    return failureRequest(reply, unwrapEither(createdLinkEither));
+  }
 
-  if (statusCode === 500) return reply.status(500).send();
+  const createdLink = unwrapEither(createdLinkEither);
 
-  return reply.status(statusCode).send(failure(error.message));
+  const response = toGetLinkResponse(createdLink);
+
+  return reply.status(201).send(success(response));
 }

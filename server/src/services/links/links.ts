@@ -2,8 +2,8 @@ import { db } from '@/db';
 import { linksTable } from '@/db/schemas/links';
 import { LinkEntity } from '@/domain/link/entity';
 import { AppError } from '@/functions/errors/appError';
-import { Either, makeLeft, makeRight } from '@/infra/shared/either';
-import { eq, InferSelectModel, sql } from 'drizzle-orm';
+import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@/infra/shared/either';
+import { eq, InferSelectModel } from 'drizzle-orm';
 
 type Link = InferSelectModel<typeof linksTable>;
 
@@ -11,7 +11,18 @@ export async function getAllLinks(): Promise<Either<AppError, LinkEntity[]>> {
   try {
     const links = await db.select().from(linksTable);
 
-    const entities = links.map<LinkEntity>((link) => new LinkEntity(link));
+    const entities = links.reduce<LinkEntity[]>((acc, value) => {
+      const link = LinkEntity.create({
+        originalUrl: value.originalUrl,
+        shortenerUrl: value.shortenerlUrl,
+        accessQuantity: value.accessQuantity,
+        createdAt: value.createdAt,
+        id: value.id,
+        updatedAt: value.updatedAt,
+      });
+
+      return isLeft(link) ? acc : [...acc, unwrapEither(link)];
+    }, [] as LinkEntity[]);
 
     return makeRight(entities);
   } catch (err) {
@@ -21,11 +32,40 @@ export async function getAllLinks(): Promise<Either<AppError, LinkEntity[]>> {
   }
 }
 
-export async function accessLink(id: string): Promise<Either<AppError, LinkEntity>> {
+export async function getLink(id: string): Promise<Either<AppError, LinkEntity>> {
+  try {
+    const [link] = await db.select().from(linksTable).where(eq(linksTable.id, id));
+
+    if (!link) return makeLeft(new AppError('NOT_FOUND', 'Link not exist'));
+
+    const entity = LinkEntity.create({
+      originalUrl: link.originalUrl,
+      shortenerUrl: link.shortenerlUrl,
+      accessQuantity: link.accessQuantity,
+      createdAt: link.createdAt,
+      id: link.id,
+      updatedAt: link.updatedAt,
+    });
+
+    return entity;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+
+    return makeLeft(new AppError('DB_ERROR', 'Error to search link', message));
+  }
+}
+
+export async function updateLink(value: LinkEntity): Promise<Either<AppError, LinkEntity>> {
   const [link] = await db
     .update(linksTable)
-    .set({ accessQuantity: sql`${linksTable.accessQuantity} + 1`, updatedAt: new Date() })
-    .where(eq(linksTable.id, id))
+    .set({
+      accessQuantity: value.accessQuantity,
+      createdAt: value.createdAt,
+      originalUrl: value.originalUrl.getValue(),
+      shortenerlUrl: value.shortenerUrl.getValue(),
+      updatedAt: value.updatedAt,
+    })
+    .where(eq(linksTable.id, value.id))
     .returning();
 
   if (!link)
@@ -36,9 +76,7 @@ export async function accessLink(id: string): Promise<Either<AppError, LinkEntit
       new AppError('DB_ERROR', 'Error in update access link from the database', link.message),
     );
 
-  const entity = new LinkEntity(link);
-
-  return makeRight(entity);
+  return makeRight(value);
 }
 
 export async function deleteLink(id: string): Promise<Either<AppError, null>> {
@@ -52,26 +90,36 @@ export async function deleteLink(id: string): Promise<Either<AppError, null>> {
   return makeRight(null);
 }
 
-export async function createLink(value: {
-  originalUrl: string;
-  shortenerUrl: string;
-}): Promise<Either<AppError, LinkEntity>> {
+export async function createLink(value: LinkEntity): Promise<Either<AppError, LinkEntity>> {
   const newLink: Omit<Link, 'id'> = {
     accessQuantity: 0,
     createdAt: new Date(),
-    originalUrl: value.originalUrl,
-    shortenerlUrl: value.shortenerUrl,
+    originalUrl: value.originalUrl.getValue(),
+    shortenerlUrl: value.shortenerUrl.getValue(),
     updatedAt: null,
   };
 
-  const [link] = await db.insert(linksTable).values(newLink).returning();
+  const [link] = await db
+    .select()
+    .from(linksTable)
+    .where(eq(linksTable.shortenerlUrl, newLink.shortenerlUrl));
 
-  if (!link) return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database'));
+  if (link)
+    return makeLeft(new AppError('DOMAIN_ERROR', 'Already exist a link with this abreviation'));
 
-  if (link instanceof Error)
-    return makeLeft(new AppError('DB_ERROR', 'Error delete link from the database', link.message));
+  const [createdLink] = await db.insert(linksTable).values(newLink).returning();
 
-  const entity = new LinkEntity(link);
+  if (!createdLink) return makeLeft(new AppError('DB_ERROR', 'Error to create link'));
 
-  return makeRight(entity);
+  if (createdLink instanceof Error)
+    return makeLeft(new AppError('DB_ERROR', 'Error to create link', createdLink.message));
+
+  return LinkEntity.create({
+    originalUrl: createdLink.originalUrl,
+    id: createdLink.id,
+    shortenerUrl: createdLink.shortenerlUrl,
+    accessQuantity: createdLink.accessQuantity,
+    createdAt: createdLink.createdAt,
+    updatedAt: createdLink.updatedAt,
+  });
 }
