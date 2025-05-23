@@ -60,4 +60,13 @@ export class LinkEntity {
       updatedAt: new Date(),
     });
   }
+
+  public toObject() {
+    return {
+      originalUrl: this.originalUrl.getValue(),
+      shortenerUrl: this.shortenerUrl.getValue(),
+      accessQuantity: this.accessQuantity,
+      createdAt: this.createdAt.toISOString(),
+    };
+  }
 }

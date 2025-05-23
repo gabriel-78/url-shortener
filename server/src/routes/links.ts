@@ -6,9 +6,12 @@ import { accessLinkParamsSchema } from '@/services/links/schemas/accessLink';
 import { createLinkBodySchema } from '@/services/links/schemas/createLink';
 import { deleteLinkParamsSchema } from '@/services/links/schemas/deleteLink';
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { getLinksByCSVHandler } from '../controllers/links/getLinksByCSVHandler';
 
 export const linkRoutes: FastifyPluginAsyncZod = async (server) => {
   server.get('/links', getLinksHandler);
+
+  server.get('/links-by-csv', getLinksByCSVHandler);
 
   server.post(
     '/links',
