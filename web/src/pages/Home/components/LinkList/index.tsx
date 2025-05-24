@@ -1,6 +1,6 @@
 import { Copy, DownloadSimple, Link as LinkIcon, Spinner, Trash } from '@phosphor-icons/react';
 import Button from '../../../../components/Button';
-import { MouseEvent } from 'react';
+import { MouseEvent, useState } from 'react';
 import IconButton from '../../../../components/IconButton';
 import { useManageLinksContext } from '../../context/ManageLinksContext/ManageLinksContext';
 import { toast } from 'sonner';
@@ -19,7 +19,10 @@ export type ShortenerLink = {
 };
 
 function LinkList({}: Props) {
+  const [isLoadingCSVDownloading, setIsLoadingCSVDownloading] = useState<boolean>(false);
+
   const { links, isLoading, removeLink } = useManageLinksContext();
+
   const navigate = useNavigate();
 
   async function onDeleteLink(event: MouseEvent<HTMLButtonElement>) {
@@ -43,6 +46,8 @@ function LinkList({}: Props) {
   }
 
   async function onDownloadCSV() {
+    setIsLoadingCSVDownloading(true);
+
     const result = await getCSVLinks();
 
     if (result.isSuccess) {
@@ -52,6 +57,8 @@ function LinkList({}: Props) {
     } else {
       toast.error(result.error);
     }
+
+    setIsLoadingCSVDownloading(false);
   }
 
   async function copyToClipboard(name: string, url: string) {
@@ -70,8 +77,13 @@ function LinkList({}: Props) {
       <header className="flex gap-3 justify-between items-center w-full">
         <h1 className="text-lg text-gray-600 ">Meus links</h1>
 
-        <Button onClick={onDownloadCSV} type="button" variant="secondary">
-          <DownloadSimple />
+        <Button
+          onClick={onDownloadCSV}
+          disabled={isLoadingCSVDownloading || isLoading || links.length === 0}
+          type="button"
+          variant="secondary"
+        >
+          {isLoadingCSVDownloading ? <Spinner className="animate-spin" /> : <DownloadSimple />}
 
           <span>Baixar CSV</span>
         </Button>
