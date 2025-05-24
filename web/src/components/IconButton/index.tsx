@@ -6,7 +6,7 @@ function IconButton({ ...props }: ComponentProps<'button'>) {
     <button
       {...props}
       className={clsx(
-        'flex w-fit h-fit gap-2 items-center transition-colors disabled:opacity-50 p-2 [&>svg]:size-4 rounded border border-solid border-transparent hover:border-blue-dark bg-gray-200 text-gray-500 text-sm-semibold',
+        'flex w-fit disabled:cursor-not-allowed enabled:cursor-pointer h-fit gap-2 items-center transition-colors disabled:opacity-50 p-2 [&>svg]:size-4 rounded border border-solid border-transparent hover:border-blue-dark bg-gray-200 text-gray-500 text-sm-semibold',
         props.className,
       )}
     >
