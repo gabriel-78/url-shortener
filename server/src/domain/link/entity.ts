@@ -1,7 +1,7 @@
 import { ShortenerUrl } from '../ValueObjects/ShortenerUrl';
-import { Url } from '../ValueObjects/url';
 import { Either, isLeft, makeRight, unwrapEither } from '@/infra/shared/either';
 import { AppError } from '@/functions/errors/appError';
+import { Url } from '../ValueObjects/Url';
 
 export class LinkEntity {
   public readonly id: string;
