@@ -12,8 +12,10 @@ export async function createLink(payload: CreateLink): Promise<Result<GetLinkRes
     if (response.data.isSuccess) return Result.success<GetLinkResponse>(response.data.data);
     else return Result.failure(response.data.error);
   } catch (err) {
-    const error = err as AxiosError<string>;
+    const error = err as AxiosError<Result<GetLinkResponse>>;
 
-    return Result.failure(error.message ?? 'Erro ao criar o link');
+    const requestErrorMessage = error.response?.data.error ?? error.message;
+
+    return Result.failure(requestErrorMessage ?? 'Erro ao criar o link');
   }
 }

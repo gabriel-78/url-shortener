@@ -54,7 +54,8 @@ function CreateLinkForm({ ...props }: Props) {
 
         reset();
       } else {
-        toast.error(result.error);
+        console.log(result);
+        toast.error('Erro no cadastro', { description: result.error });
       }
     },
     [addLink],

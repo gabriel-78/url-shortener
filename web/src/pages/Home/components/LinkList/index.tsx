@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { deleteLink } from '../../../../services/links/deleteLink';
 import { getCSVLinks } from '../../../../services/links/getCSVLinks';
 import downloadFiles from '../../../../shared/utils/downloadFiles';
-import downloadCSVFile from '../../../../shared/utils/downloadCSVFile';
 
 type Props = {};
 
