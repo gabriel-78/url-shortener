@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { deleteLink } from '../../../../services/links/deleteLink';
 import { getCSVLinks } from '../../../../services/links/getCSVLinks';
 import downloadFiles from '../../../../shared/utils/downloadFiles';
+import downloadCSVFile from '../../../../shared/utils/downloadCSVFile';
 
 type Props = {};
 
@@ -110,7 +111,7 @@ function LinkList({}: Props) {
                     className="text-md truncate text-blue-base cursor-pointer"
                     onClick={() => navigate(`/links/${link.id}`)}
                   >
-                    {link.shortenerlUrl}
+                    {`${window.location.host}/${link.shortenerlUrl}`}
                   </strong>
 
                   <small className="text-sm text-gray-500 truncate">{link.originalUrl}</small>
