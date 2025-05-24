@@ -1,9 +1,10 @@
-import { useState, ReactNode, useEffect, useCallback } from 'react';
+import { useState, ReactNode, useCallback } from 'react';
 import { Link } from '../../../../services/links/link';
 import { ManageLinksContext } from './ManageLinksContext';
 import { getAllLinks } from '../../../../services/links/getLinks';
 import { parseGetLinkResponseToLink } from '../../utils/parseGetLinkResponseToLink';
 import { toast } from 'sonner';
+import { useRunOnce } from '../../../../shared/hooks/useRunOnce';
 
 export const ManageLinksProvider = ({ children }: { children: ReactNode }) => {
   const [links, setLinks] = useState<Link[]>([]);
@@ -39,9 +40,9 @@ export const ManageLinksProvider = ({ children }: { children: ReactNode }) => {
     setIsFetchingLinks(false);
   }, []);
 
-  useEffect(() => {
+  useRunOnce(() => {
     fetchLinks();
-  }, [fetchLinks]);
+  });
 
   return (
     <ManageLinksContext.Provider value={{ links, addLink, removeLink, isLoading: isFetchingLinks }}>

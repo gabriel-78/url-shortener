@@ -1,9 +1,10 @@
 import { useParams } from 'react-router-dom';
 import LogoIcon from '../../shared/assets/Logo_Icon.svg';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from '../../services/links/link';
 import { parseGetLinkResponseToLink } from '../Home/utils/parseGetLinkResponseToLink';
 import { accessLink } from '../../services/links/accessLink';
+import { useRunOnce } from '../../shared/hooks/useRunOnce';
 
 function Redirect() {
   const { linkId } = useParams<{ linkId: string }>();
@@ -20,9 +21,9 @@ function Redirect() {
     }
   }
 
-  useEffect(() => {
+  useRunOnce(() => {
     fetchAccessLink();
-  }, []);
+  });
 
   return (
     <div className="flex bg-gray-200 w-full h-dvh items-center justify-center">
