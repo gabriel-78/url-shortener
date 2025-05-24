@@ -1,6 +1,9 @@
+version: '3.8'
+
 services:
-  pg:
+  db:
     image: bitnami/postgresql:latest
+    container_name: postgres
     ports:
       - "5432:5432"
     environment:
@@ -8,4 +11,33 @@ services:
       - POSTGRES_PASSWORD=docker
       - POSTGRES_DB=url-shortener
     volumes:
-      - "./docker:/docker-entrypoint-initdb.d"
+      - db:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shortener-url-server
+    depends_on:
+      - db
+    ports:
+      - 3000:$PORT
+    networks:
+      - app-network
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=${PORT}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - CLOUDFLARE_ACCESS_KEY_ID=${CLOUDFLARE_ACCESS_KEY_ID}
+      - CLOUDFLARE_SECRET_ACCESS_KEY=${CLOUDFLARE_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_BUCKET=${CLOUDFLARE_BUCKET}
+      - CLOUDFLARE_PUBLIC_URL=${CLOUDFLARE_PUBLIC_URL}
+
+volumes:
+  db:
+
+networks:
+  app-network:
+    driver: bridge
